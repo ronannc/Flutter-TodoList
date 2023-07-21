@@ -55,7 +55,7 @@ class _TodolistPageState extends State<TodolistPage> {
               Flexible(
                 child: ListView(shrinkWrap: true, children: [
                   for (String todo in todos)
-                    ListItem()
+                    ListItem(title: todo,)
                 ]),
               ),
               const SizedBox(height: 8),
