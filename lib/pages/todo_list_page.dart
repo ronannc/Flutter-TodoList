@@ -19,10 +19,10 @@ class _TodolistPageState extends State<TodolistPage> {
 
   Item? deletedItem;
   int? deletedItemIndex;
+  String? errorText;
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
 
     todoRepository.getTodoList().then((value) {
@@ -47,10 +47,17 @@ class _TodolistPageState extends State<TodolistPage> {
                     Expanded(
                       child: TextField(
                         controller: todoController,
-                        decoration: const InputDecoration(
-                            border: OutlineInputBorder(),
-                            labelText: 'Adicione uma tarefa',
-                            hintText: 'Estudar Flutter!'),
+                        decoration: InputDecoration(
+                          border: const OutlineInputBorder(),
+                          labelText: 'Adicione uma tarefa',
+                          hintText: 'Estudar Flutter!',
+                          errorText: errorText,
+                        ),
+                        onChanged: (value) {
+                          setState(() {
+                            errorText = null;
+                          });
+                        },
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -61,16 +68,22 @@ class _TodolistPageState extends State<TodolistPage> {
                       ),
                       onPressed: () {
                         String text = todoController.text;
-                        setState(() {
-                          todos.add(
-                            Item(
-                              title: text,
-                              dateTime: DateTime.now(),
-                            ),
-                          );
-                        });
-                        todoController.clear();
-                        todoRepository.saveTodoList(todos);
+                        if (text.isNotEmpty) {
+                          setState(() {
+                            todos.add(
+                              Item(
+                                title: text,
+                                dateTime: DateTime.now(),
+                              ),
+                            );
+                          });
+                          todoController.clear();
+                          todoRepository.saveTodoList(todos);
+                        } else {
+                          setState(() {
+                            errorText = 'Por favor, insira uma tarefa!';
+                          });
+                        }
                       },
                       child: const Icon(Icons.add, size: 30),
                     )
