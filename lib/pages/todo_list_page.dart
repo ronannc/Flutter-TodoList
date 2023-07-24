@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:to_do_list/components/list_item.dart';
 import 'package:to_do_list/models/item.dart';
+import 'package:to_do_list/repositories/todo_repository.dart';
 
 class TodolistPage extends StatefulWidget {
   const TodolistPage({super.key});
@@ -12,10 +13,24 @@ class TodolistPage extends StatefulWidget {
 
 class _TodolistPageState extends State<TodolistPage> {
   final TextEditingController todoController = TextEditingController();
+  final TodoRepository todoRepository = TodoRepository();
 
   List<Item> todos = [];
+
   Item? deletedItem;
   int? deletedItemIndex;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+
+    todoRepository.getTodoList().then((value) {
+      setState(() {
+        todos = value;
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,10 +62,15 @@ class _TodolistPageState extends State<TodolistPage> {
                       onPressed: () {
                         String text = todoController.text;
                         setState(() {
-                          todos
-                              .add(Item(title: text, dateTime: DateTime.now()));
+                          todos.add(
+                            Item(
+                              title: text,
+                              dateTime: DateTime.now(),
+                            ),
+                          );
                         });
                         todoController.clear();
+                        todoRepository.saveTodoList(todos);
                       },
                       child: const Icon(Icons.add, size: 30),
                     )
@@ -67,7 +87,8 @@ class _TodolistPageState extends State<TodolistPage> {
                 Row(
                   children: [
                     Expanded(
-                        child: Text('Voce possui ${todos.length} tarefas')),
+                      child: Text('Voce possui ${todos.length} tarefas'),
+                    ),
                     const SizedBox(width: 8),
                     ElevatedButton(
                         style: ElevatedButton.styleFrom(
@@ -92,7 +113,7 @@ class _TodolistPageState extends State<TodolistPage> {
     setState(() {
       todos.remove(item);
     });
-
+    todoRepository.saveTodoList(todos);
     ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text(
@@ -106,6 +127,7 @@ class _TodolistPageState extends State<TodolistPage> {
           setState(() {
             todos.insert(deletedItemIndex!, deletedItem!);
           });
+          todoRepository.saveTodoList(todos);
         },
       ),
     ));
@@ -133,6 +155,7 @@ class _TodolistPageState extends State<TodolistPage> {
                 setState(() {
                   todos.clear();
                 });
+                todoRepository.saveTodoList(todos);
               },
               child: const Text(
                 'Limpar Tudo',
