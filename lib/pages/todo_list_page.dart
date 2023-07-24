@@ -4,7 +4,7 @@ import 'package:to_do_list/components/list_item.dart';
 import 'package:to_do_list/models/item.dart';
 
 class TodolistPage extends StatefulWidget {
-  TodolistPage({super.key});
+  const TodolistPage({super.key});
 
   @override
   State<TodolistPage> createState() => _TodolistPageState();
@@ -14,6 +14,8 @@ class _TodolistPageState extends State<TodolistPage> {
   final TextEditingController todoController = TextEditingController();
 
   List<Item> todos = [];
+  Item? deletedItem;
+  int? deletedItemIndex;
 
   @override
   Widget build(BuildContext context) {
@@ -72,12 +74,7 @@ class _TodolistPageState extends State<TodolistPage> {
                           backgroundColor: const Color(0xff00d7f3),
                           padding: const EdgeInsets.all(18),
                         ),
-                        onPressed: () {
-                          todoController.clear();
-                          setState(() {
-                            todos.clear();
-                          });
-                        },
+                        onPressed: showDeleteItensConfirmationDialo,
                         child: const Text('Limpar tudo'))
                   ],
                 )
@@ -90,8 +87,59 @@ class _TodolistPageState extends State<TodolistPage> {
   }
 
   void onDelete(Item item) {
+    deletedItem = item;
+    deletedItemIndex = todos.indexOf(item);
     setState(() {
       todos.remove(item);
     });
+
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(
+        'Tarefa ${item.title} foi removido com sucesso!',
+        style: TextStyle(color: Colors.black),
+      ),
+      backgroundColor: Colors.grey.shade200,
+      action: SnackBarAction(
+        label: 'Desfazer',
+        onPressed: () {
+          setState(() {
+            todos.insert(deletedItemIndex!, deletedItem!);
+          });
+        },
+      ),
+    ));
+  }
+
+  void showDeleteItensConfirmationDialo() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Limpar tudo?'),
+        content:
+            const Text('Voce tem certeza que deseja apagar todas as tarefas?'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: const Text('Cancelar',
+                style: TextStyle(color: Color(0xff00d7f3))),
+          ),
+          TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                todoController.clear();
+                setState(() {
+                  todos.clear();
+                });
+              },
+              child: const Text(
+                'Limpar Tudo',
+                style: TextStyle(color: Colors.red),
+              )),
+        ],
+      ),
+    );
   }
 }

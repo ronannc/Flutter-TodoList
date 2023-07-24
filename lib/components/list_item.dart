@@ -34,7 +34,7 @@ class ListItem extends StatelessWidget {
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(4),
-            color: Colors.grey,
+            color: Colors.grey.shade200,
           ),
           padding: const EdgeInsets.all(8.0),
           child: Column(
